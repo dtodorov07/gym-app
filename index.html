@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Forge" />
+<meta name="theme-color" content="#08070a" />
+<title>Forge — Private Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg-0:#08070a;--bg-1:#0e0c0f;--bg-2:#151217;--bg-3:#1c1820;
+  --surface-glass:rgba(255,255,255,0.045);--surface-glass-strong:rgba(255,255,255,0.075);
+  --border-glass:rgba(255,255,255,0.09);--border-glass-strong:rgba(255,255,255,0.16);
+  --ink-0:#f3ede1;--ink-1:#cfc7ba;--ink-2:#948b80;--ink-3:#635c56;
+  --gold-100:#f4e3ad;--gold-300:#e3c470;--gold-500:#cda144;--gold-700:#a07b2c;
+  --gold-grad:linear-gradient(135deg,#f4e3ad 0%,#cda144 45%,#8a6521 100%);
+  --emerald-300:#6fd5a8;--emerald-500:#2f9e6e;
+  --radius-sm:10px;--radius-md:16px;--radius-lg:24px;
+  --shadow-soft:0 8px 30px rgba(0,0,0,.35);
+  --font-display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --font-sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%,rgba(205,161,68,.08),transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 0%,rgba(47,158,110,.06),transparent 55%),
+    var(--bg-0);
+  color:var(--ink-0);font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:500;letter-spacing:-.01em}
+button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer}
+input{font-family:inherit;color:inherit}
+a{text-decoration:none;color:inherit}
+::selection{background:rgba(205,161,68,.35)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+.app{
+  width:100%;max-width:480px;height:100dvh;margin:0 auto;
+  position:relative;display:flex;flex-direction:column;overflow:hidden;
+}
+.content{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:max(env(safe-area-inset-top),20px) 18px calc(104px + env(safe-area-inset-bottom)) 18px;
+}
+.glass{
+  background:linear-gradient(155deg,var(--surface-glass-strong),var(--surface-glass));
+  border:1px solid var(--border-glass);border-radius:var(--radius-lg);
+  backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);
+  box-shadow:var(--shadow-soft);
+}
+.gold-text{background:var(--gold-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.btn-primary{
+  background:var(--gold-grad);color:#1a1206;border-radius:var(--radius-md);
+  font-weight:700;letter-spacing:.01em;box-shadow:0 6px 24px rgba(205,161,68,.28);
+  transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;
+}
+.btn-primary:hover{filter:brightness(1.05);box-shadow:0 8px 30px rgba(205,161,68,.38)}
+.btn-primary:active{transform:scale(.97)}
+.btn-ghost{
+  background:var(--surface-glass);border:1px solid var(--border-glass);
+  color:var(--ink-0);border-radius:var(--radius-md);
+  transition:transform .15s ease,background .15s ease,border-color .15s ease;
+}
+.btn-ghost:hover{background:var(--surface-glass-strong);border-color:var(--border-glass-strong)}
+.btn-ghost:active{transform:scale(.96)}
+.tap:active{transform:scale(.95)}
+.tap{transition:transform .12s ease}
+
+/* tab bar */
+.tab-bar{
+  position:absolute;bottom:max(env(safe-area-inset-bottom),14px);left:50%;transform:translateX(-50%);
+  width:calc(100% - 40px);max-width:440px;display:flex;justify-content:space-around;align-items:center;
+  padding:10px 8px;border-radius:26px;z-index:50;
+}
+.tab-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 18px;border-radius:18px;
+  color:var(--ink-2);font-size:11px;font-weight:600;letter-spacing:.02em;transition:color .2s ease,background .2s ease}
+.tab-item svg{transition:transform .2s ease}
+.tab-item.active{color:var(--gold-300);background:rgba(205,161,68,.1)}
+.tab-item.active svg{transform:translateY(-1px)}
+
+/* headers */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px}
+.ph-left{display:flex;align-items:center;gap:12px}
+.back-btn{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;
+  background:var(--surface-glass);border:1px solid var(--border-glass);color:var(--ink-0);flex-shrink:0}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-300);margin-bottom:2px}
+.title{font-size:26px;color:var(--ink-0)}
+
+/* body diagram */
+.body-diagram{display:flex;flex-direction:column;align-items:center;gap:14px}
+.body-svg{width:100%;max-width:300px;height:auto;filter:drop-shadow(0 20px 40px rgba(0,0,0,.5))}
+.body-svg.compact{max-width:170px}
+.muscle-tile{cursor:pointer;transform-box:fill-box;transform-origin:center;
+  transition:transform .18s ease,filter .18s ease,stroke .18s ease}
+.muscle-tile:hover{transform:scale(1.02)}
+.muscle-tile:active{transform:scale(.97)}
+.view-toggle{display:flex;padding:4px;border-radius:999px;gap:2px}
+.vt-btn{color:var(--ink-2);font-size:12.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  padding:7px 20px;border-radius:999px;transition:color .2s ease,background .2s ease}
+.vt-btn.active{background:var(--gold-grad);color:#1a1206}
+
+/* heat legend */
+.heat-legend{display:flex;flex-direction:column;gap:6px;width:100%}
+.heat-legend-bar{display:flex;width:100%;height:6px;border-radius:999px;overflow:hidden}
+.heat-legend-bar>div{flex:1}
+.heat-legend-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-2);letter-spacing:.02em}
+.heat-legend-labels span:nth-child(2){color:var(--ink-3)}
+
+/* lists */
+.section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-bottom:10px;padding-left:2px}
+.rows{display:flex;flex-direction:column;gap:8px}
+.muscle-row{display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;background:var(--surface-glass);
+  border:1px solid var(--border-glass);border-radius:var(--radius-md);text-align:left}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
+.muscle-row-label{flex:1;font-size:14.5px;font-weight:600;color:var(--ink-0)}
+.muscle-row-meta{font-size:12px;color:var(--ink-2);text-transform:capitalize}
+.list-row{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;background:var(--surface-glass);
+  border:1px solid var(--border-glass);border-radius:var(--radius-md);text-align:left}
+.glyph{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--gold-100);
+  background:linear-gradient(155deg,rgba(205,161,68,.22),rgba(205,161,68,.06));border:1px solid rgba(205,161,68,.25);flex-shrink:0}
+.list-row-body{flex:1;min-width:0}
+.list-row-title{font-size:14.5px;font-weight:600;color:var(--ink-0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-row-sub{font-size:12px;color:var(--ink-2);margin-top:2px}
+.search-input{width:100%;padding:13px 16px;background:var(--surface-glass);border:1px solid var(--border-glass);
+  border-radius:var(--radius-md);color:var(--ink-0);font-size:14.5px;outline:none;transition:border-color .2s ease}
+.search-input:focus{border-color:var(--border-glass-strong)}
+.search-input::placeholder{color:var(--ink-3)}
+.empty{text-align:center;padding:40px 20px;color:var(--ink-2);font-size:13.5px}
+
+/* stat grid */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-cell{display:flex;flex-direction:column;gap:4px;padding:14px 12px;background:var(--surface-glass);
+  border:1px solid var(--border-glass);border-radius:var(--radius-md)}
+.stat-value{font-family:var(--font-display);font-size:20px;color:var(--ink-0)}
+.stat-label{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;
+  letter-spacing:.03em;background:rgba(205,161,68,.14);color:var(--gold-300);border:1px solid rgba(205,161,68,.25)}
+.pill-em{background:rgba(47,158,110,.14);color:var(--emerald-300);border-color:rgba(47,158,110,.25)}
+
+.field-label{font-size:11px;font-weight:600;letter-spacing:.03em;color:var(--ink-2);margin-bottom:6px}
+.inc-btn{flex:1;padding:8px 0;font-size:12.5px;font-weight:700;border-radius:10px}
+.rpe-btn{flex:1;padding:9px 0;font-size:13px;font-weight:700;border-radius:10px}
+.rpe-btn.active{background:var(--gold-grad);color:#1a1206;border-color:transparent}
+.metric-btn{background:var(--surface-glass);border:1px solid var(--border-glass);color:var(--ink-2);font-size:11px;
+  font-weight:700;padding:6px 12px;border-radius:999px;transition:color .2s ease,background .2s ease}
+.metric-btn.active{background:rgba(205,161,68,.16);color:var(--gold-300);border-color:rgba(205,161,68,.3)}
+
+/* volume bars */
+.vol-track{width:100%;height:9px;border-radius:999px;background:rgba(255,255,255,.05);overflow:hidden}
+.vol-fill{height:100%;border-radius:999px;transition:width .4s ease}
+
+/* rest timer */
+@keyframes rt-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.rest-timer{display:flex;align-items:center;gap:12px;padding:12px 16px;margin-bottom:16px;animation:rt-in .3s ease-out}
+.rt-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* week strip */
+.week-day{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700}
+
+@keyframes fade-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.screen-anim{animation:fade-in .28s ease}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="content" id="content"></div>
+  <nav class="tab-bar glass" id="tabbar"></nav>
+</div>
+
+<script>
+"use strict";
+/* ---------------- storage ---------------- */
+var STORE_KEY = "forge-fitness-store";
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(raw){ var p = JSON.parse(raw); return { sets: p.sets||[], customExercises: p.customExercises||[] }; }
+  }catch(e){}
+  return { sets: [], customExercises: [] };
+}
+var state = loadState();
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify({sets:state.sets,customExercises:state.customExercises})); }catch(e){} }
+function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+
+/* ---------------- data ---------------- */
+var MUSCLE_GROUPS = [
+  {id:"chest",label:"Chest"},{id:"back",label:"Back"},{id:"shoulders",label:"Shoulders"},
+  {id:"biceps",label:"Biceps"},{id:"triceps",label:"Triceps"},{id:"forearms",label:"Forearms"},
+  {id:"abs",label:"Abs"},{id:"quads",label:"Quads"},{id:"hamstrings",label:"Hamstrings"},
+  {id:"glutes",label:"Glutes"},{id:"calves",label:"Calves"}
+];
+var MUSCLE_LABEL = {}; MUSCLE_GROUPS.forEach(function(m){ MUSCLE_LABEL[m.id]=m.label; });
+
+var SEED_EXERCISES = [
+  {id:"bench-press",name:"Barbell Bench Press",muscle:"chest",secondary:["triceps","shoulders"],glyph:"BP"},
+  {id:"incline-db-press",name:"Incline Dumbbell Press",muscle:"chest",secondary:["shoulders"],glyph:"ID"},
+  {id:"cable-fly",name:"Cable Fly",muscle:"chest",glyph:"CF"},
+  {id:"pushups",name:"Push-ups",muscle:"chest",secondary:["triceps"],glyph:"PU"},
+  {id:"dips-chest",name:"Chest Dips",muscle:"chest",secondary:["triceps"],glyph:"CD"},
+  {id:"deadlift",name:"Deadlift",muscle:"back",secondary:["hamstrings","glutes"],glyph:"DL"},
+  {id:"pullups",name:"Pull-ups",muscle:"back",secondary:["biceps"],glyph:"PU"},
+  {id:"barbell-row",name:"Barbell Row",muscle:"back",secondary:["biceps"],glyph:"BR"},
+  {id:"lat-pulldown",name:"Lat Pulldown",muscle:"back",secondary:["biceps"],glyph:"LP"},
+  {id:"seated-cable-row",name:"Seated Cable Row",muscle:"back",glyph:"SR"},
+  {id:"ohp",name:"Overhead Press",muscle:"shoulders",secondary:["triceps"],glyph:"OP"},
+  {id:"lateral-raise",name:"Lateral Raise",muscle:"shoulders",glyph:"LR"},
+  {id:"rear-delt-fly",name:"Rear Delt Fly",muscle:"shoulders",glyph:"RD"},
+  {id:"arnold-press",name:"Arnold Press",muscle:"shoulders",glyph:"AP"},
+  {id:"front-raise",name:"Front Raise",muscle:"shoulders",glyph:"FR"},
+  {id:"barbell-curl",name:"Barbell Curl",muscle:"biceps",glyph:"BC"},
+  {id:"db-curl",name:"Dumbbell Curl",muscle:"biceps",glyph:"DC"},
+  {id:"hammer-curl",name:"Hammer Curl",muscle:"biceps",secondary:["forearms"],glyph:"HC"},
+  {id:"preacher-curl",name:"Preacher Curl",muscle:"biceps",glyph:"PC"},
+  {id:"tricep-pushdown",name:"Tricep Pushdown",muscle:"triceps",glyph:"TP"},
+  {id:"skullcrusher",name:"Skullcrusher",muscle:"triceps",glyph:"SK"},
+  {id:"overhead-ext",name:"Overhead Tricep Extension",muscle:"triceps",glyph:"OE"},
+  {id:"close-grip-bench",name:"Close-Grip Bench Press",muscle:"triceps",secondary:["chest"],glyph:"CG"},
+  {id:"wrist-curl",name:"Wrist Curl",muscle:"forearms",glyph:"WC"},
+  {id:"reverse-curl",name:"Reverse Curl",muscle:"forearms",secondary:["biceps"],glyph:"RC"},
+  {id:"farmers-carry",name:"Farmer's Carry",muscle:"forearms",glyph:"FC"},
+  {id:"hanging-leg-raise",name:"Hanging Leg Raise",muscle:"abs",glyph:"HL"},
+  {id:"cable-crunch",name:"Cable Crunch",muscle:"abs",glyph:"CC"},
+  {id:"plank",name:"Plank",muscle:"abs",glyph:"PL"},
+  {id:"russian-twist",name:"Russian Twist",muscle:"abs",glyph:"RT"},
+  {id:"back-squat",name:"Back Squat",muscle:"quads",secondary:["glutes"],glyph:"SQ"},
+  {id:"leg-press",name:"Leg Press",muscle:"quads",secondary:["glutes"],glyph:"LP"},
+  {id:"leg-extension",name:"Leg Extension",muscle:"quads",glyph:"LE"},
+  {id:"walking-lunge",name:"Walking Lunge",muscle:"quads",secondary:["glutes"],glyph:"WL"},
+  {id:"romanian-deadlift",name:"Romanian Deadlift",muscle:"hamstrings",secondary:["glutes"],glyph:"RD"},
+  {id:"leg-curl",name:"Leg Curl",muscle:"hamstrings",glyph:"LC"},
+  {id:"good-morning",name:"Good Morning",muscle:"hamstrings",secondary:["back"],glyph:"GM"},
+  {id:"hip-thrust",name:"Hip Thrust",muscle:"glutes",secondary:["hamstrings"],glyph:"HT"},
+  {id:"cable-kickback",name:"Cable Kickback",muscle:"glutes",glyph:"CK"},
+  {id:"bulgarian-split-squat",name:"Bulgarian Split Squat",muscle:"glutes",secondary:["quads"],glyph:"BS"},
+  {id:"standing-calf-raise",name:"Standing Calf Raise",muscle:"calves",glyph:"SC"},
+  {id:"seated-calf-raise",name:"Seated Calf Raise",muscle:"calves",glyph:"SC"}
+];
+function allExercises(){ return SEED_EXERCISES.concat(state.customExercises); }
+function exercisesForMuscle(m){ return allExercises().filter(function(e){return e.muscle===m;}); }
+function exerciseById(id){ var a=allExercises(); for(var i=0;i<a.length;i++){if(a[i].id===id)return a[i];} return null; }
+function setsForExercise(id){ return state.sets.filter(function(s){return s.exerciseId===id;}).sort(function(a,b){return a.timestamp-b.timestamp;}); }
+function addCustomExercise(name,muscle){
+  var ex={id:"custom-"+uid(),name:name,muscle:muscle,secondary:[],custom:true,glyph:name.slice(0,2).toUpperCase()};
+  state.customExercises.push(ex); save(); return ex;
+}
+function logSet(e){ state.sets.push({id:uid(),timestamp:Date.now(),exerciseId:e.exerciseId,weight:e.weight,reps:e.reps,rpe:e.rpe}); save(); }
+
+/* ---------------- geometry ---------------- */
+function cut(from,toward,r){
+  var dx=toward[0]-from[0],dy=toward[1]-from[1],len=Math.hypot(dx,dy);
+  var t=Math.min(r,len/2)/(len||1);
+  return [from[0]+dx*t,from[1]+dy*t];
+}
+function roundedPolygon(pts,r){
+  var n=pts.length,parts=[];
+  for(var i=0;i<n;i++){
+    var prev=pts[(i-1+n)%n],cur=pts[i],next=pts[(i+1)%n];
+    var p1=cut(cur,prev,r),p2=cut(cur,next,r);
+    parts.push((i===0?"M ":"L ")+p1[0].toFixed(2)+" "+p1[1].toFixed(2));
+    parts.push("Q "+cur[0].toFixed(2)+" "+cur[1].toFixed(2)+" "+p2[0].toFixed(2)+" "+p2[1].toFixed(2));
+  }
+  parts.push("Z"); return parts.join(" ");
+}
+function mirrorX(pts,axis){ axis=axis||120; return pts.map(function(p){return [axis*2-p[0],p[1]];}); }
+function capsule(x1,y1,x2,y2,r){ return roundedPolygon([[x1,y1],[x2,y1],[x2,y2],[x1,y2]],r); }
+
+var HEAD={cx:120,cy:40,rx:23,ry:26};
+var NECK=roundedPolygon([[107,64],[133,64],[130,84],[110,84]],4);
+var HANDS=[{cx:38,cy:316,rx:10,ry:14},{cx:202,cy:316,rx:10,ry:14}];
+var FEET=[{cx:93,cy:548,rx:15,ry:9},{cx:147,cy:548,rx:15,ry:9}];
+var SILHOUETTE=[
+  capsule(70,82,170,272,30),capsule(74,274,166,336,26),
+  capsule(28,86,96,310,22),capsule(144,86,212,310,22),
+  capsule(66,276,124,536,26),capsule(116,276,174,536,26)
+];
+var shoulderL=[[48,94],[88,86],[94,116],[82,138],[54,136],[38,116]];
+var chestP=[[84,92],[156,92],[166,118],[154,160],[120,170],[86,160],[74,118]];
+var bicepL=[[40,140],[80,146],[84,164],[78,204],[58,212],[38,202],[34,164]];
+var forearmL=[[36,214],[76,214],[80,240],[76,282],[62,304],[46,304],[34,282],[30,240]];
+var absP=[[98,174],[142,174],[148,198],[146,230],[140,264],[120,276],[100,264],[94,230],[92,198]];
+var quadL=[[78,280],[116,280],[122,322],[120,372],[112,408],[86,408],[76,372],[72,322]];
+var calfL=[[82,438],[112,438],[118,468],[116,502],[108,532],[88,532],[78,502],[76,468]];
+var backP=[[90,88],[150,88],[164,122],[168,168],[158,214],[142,252],[120,266],[98,252],[82,214],[72,168],[76,122]];
+var glutesP=[[82,268],[158,268],[164,300],[152,324],[120,332],[88,324],[76,300]];
+var hamL=[[76,326],[114,326],[120,368],[118,406],[110,414],[86,414],[78,406],[74,368]];
+
+var FRONT_MUSCLES=[
+  {id:"shoulders",d:roundedPolygon(shoulderL,10)},{id:"shoulders",d:roundedPolygon(mirrorX(shoulderL),10)},
+  {id:"chest",d:roundedPolygon(chestP,12)},
+  {id:"biceps",d:roundedPolygon(bicepL,10)},{id:"biceps",d:roundedPolygon(mirrorX(bicepL),10)},
+  {id:"forearms",d:roundedPolygon(forearmL,8)},{id:"forearms",d:roundedPolygon(mirrorX(forearmL),8)},
+  {id:"abs",d:roundedPolygon(absP,8)},
+  {id:"quads",d:roundedPolygon(quadL,10)},{id:"quads",d:roundedPolygon(mirrorX(quadL),10)},
+  {id:"calves",d:roundedPolygon(calfL,8)},{id:"calves",d:roundedPolygon(mirrorX(calfL),8)}
+];
+var BACK_MUSCLES=[
+  {id:"shoulders",d:roundedPolygon(shoulderL,10)},{id:"shoulders",d:roundedPolygon(mirrorX(shoulderL),10)},
+  {id:"back",d:roundedPolygon(backP,14)},
+  {id:"triceps",d:roundedPolygon(bicepL,10)},{id:"triceps",d:roundedPolygon(mirrorX(bicepL),10)},
+  {id:"forearms",d:roundedPolygon(forearmL,8)},{id:"forearms",d:roundedPolygon(mirrorX(forearmL),8)},
+  {id:"glutes",d:roundedPolygon(glutesP,12)},
+  {id:"hamstrings",d:roundedPolygon(hamL,10)},{id:"hamstrings",d:roundedPolygon(mirrorX(hamL),10)},
+  {id:"calves",d:roundedPolygon(calfL,8)},{id:"calves",d:roundedPolygon(mirrorX(calfL),8)}
+];
+
+/* ---------------- heat map ---------------- */
+var HEAT_WINDOW_DAYS=7;
+var HEAT_COLORS={none:"#2a2630",cold:"#4f80c2",cool:"#4fa9a8",balanced:"#4fae74",warm:"#d9a643",hot:"#d9622f",max:"#c23b3b"};
+function computeSetCounts(days){
+  days=days||HEAT_WINDOW_DAYS;
+  var cutoff=Date.now()-days*864e5,totals={};
+  MUSCLE_GROUPS.forEach(function(m){totals[m.id]=0;});
+  state.sets.forEach(function(s){
+    if(s.timestamp<cutoff)return;
+    var ex=exerciseById(s.exerciseId); if(!ex)return;
+    totals[ex.muscle]+=1;
+    (ex.secondary||[]).forEach(function(sec){totals[sec]+=0.35;});
+  });
+  return totals;
+}
+function computeVolumes(days){
+  days=days||HEAT_WINDOW_DAYS;
+  var cutoff=Date.now()-days*864e5,totals={};
+  MUSCLE_GROUPS.forEach(function(m){totals[m.id]=0;});
+  state.sets.forEach(function(s){
+    if(s.timestamp<cutoff)return;
+    var ex=exerciseById(s.exerciseId); if(!ex)return;
+    var v=s.weight*s.reps; totals[ex.muscle]+=v;
+    (ex.secondary||[]).forEach(function(sec){totals[sec]+=v*0.35;});
+  });
+  return totals;
+}
+function levelForCount(c){
+  if(c<=0)return"none"; if(c<2)return"cold"; if(c<4)return"cool";
+  if(c<7)return"balanced"; if(c<10)return"warm"; if(c<14)return"hot"; return"max";
+}
+function colorForCount(c){ return HEAT_COLORS[levelForCount(c)]; }
+
+/* ---------------- calc ---------------- */
+function epley1RM(w,r){ if(r<=0||w<=0)return 0; if(r===1)return w; return w*(1+r/30); }
+function detectPRs(sets){
+  var chrono=sets.slice().sort(function(a,b){return a.timestamp-b.timestamp;});
+  var map={},bw=0,bv=0,b1=0;
+  chrono.forEach(function(s){
+    var recs=[],v=s.weight*s.reps,o=epley1RM(s.weight,s.reps);
+    if(s.weight>bw){bw=s.weight;recs.push("weight");}
+    if(v>bv){bv=v;recs.push("volume");}
+    if(o>b1){b1=o;recs.push("1rm");}
+    if(recs.length)map[s.id]=recs;
+  });
+  return map;
+}
+function formatVolume(v){ if(!v)return"—"; if(v>=1000)return (v/1000).toFixed(1).replace(/\.0$/,"")+"k"; return Math.round(v).toString(); }
+function dayKey(ts){ var d=new Date(ts); return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate(); }
+function computeStreak(){
+  if(!state.sets.length)return 0;
+  var days={}; state.sets.forEach(function(s){days[dayKey(s.timestamp)]=1;});
+  var cur=new Date(); cur.setHours(0,0,0,0);
+  if(!days[dayKey(cur.getTime())]){ cur.setDate(cur.getDate()-1); if(!days[dayKey(cur.getTime())])return 0; }
+  var streak=0;
+  while(days[dayKey(cur.getTime())]){ streak++; cur.setDate(cur.getDate()-1); }
+  return streak;
+}
+function daysTrainedThisWeek(){
+  var days={},start=new Date(),dow=start.getDay();
+  start.setHours(0,0,0,0); start.setDate(start.getDate()-dow);
+  state.sets.forEach(function(s){ if(s.timestamp>=start.getTime())days[new Date(s.timestamp).getDay()]=1; });
+  return days;
+}
+
+/* ---------------- icons (inline svg) ---------------- */
+var ICONS={
+  home:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/></svg>',
+  body:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v7M5 9l7 2 7-2M9 21l3-7 3 7"/></svg>',
+  chart:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  chevronLeft:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  arrowRight:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  flame:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e0864b" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1 .5-2 1-2.5C9 9 9 6 12 2z"/><path d="M12 22a6 6 0 0 0 6-6c0-3-2-5-3-6.5.5 2-1 3.5-3 3.5s-2.5-1-2-3C7 12 6 14 6 16a6 6 0 0 0 6 6z"/></svg>',
+  timer:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>',
+  x:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  trophy:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v4a6 6 0 0 1-12 0V4z"/><path d="M6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3M9 20h6M12 14v6"/></svg>',
+  plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>'
+};
+
+/* ---------------- helpers ---------------- */
+function el(html){ var t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+var content=document.getElementById("content");
+
+/* ---------------- rest timer (global) ---------------- */
+var restTimer={endsAt:null,interval:null};
+function startRest(seconds){ restTimer.endsAt=Date.now()+seconds*1000; }
+function clearRest(){ restTimer.endsAt=null; if(restTimer.interval){clearInterval(restTimer.interval);restTimer.interval=null;} var n=document.getElementById("rest-timer"); if(n)n.remove(); }
+function mountRestTimer(container){
+  if(!restTimer.endsAt)return;
+  var node=el('<div class="glass rest-timer" id="rest-timer"></div>');
+  container.insertBefore(node,container.firstChild);
+  function tick(){
+    var rem=Math.max(0,Math.ceil((restTimer.endsAt-Date.now())/1000));
+    var done=rem<=0;
+    var mm=Math.floor(rem/60),ss=rem%60;
+    node.style.borderColor=done?"rgba(111,213,168,.4)":"var(--border-glass)";
+    node.innerHTML=
+      '<div class="rt-icon" style="background:'+(done?"rgba(111,213,168,.15)":"rgba(205,161,68,.14)")+';color:'+(done?"var(--emerald-300)":"var(--gold-300)")+'">'+ICONS.timer+'</div>'+
+      '<div style="flex:1"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)">'+(done?"Rest complete":"Resting")+'</div>'+
+      '<div style="font-family:var(--font-display);font-size:20px;color:var(--ink-0)">'+(done?"Ready":mm+":"+(ss<10?"0":"")+ss)+'</div></div>'+
+      '<button class="tap" id="rt-close" aria-label="Dismiss" style="color:var(--ink-2);padding:6px">'+ICONS.x+'</button>';
+    node.querySelector("#rt-close").onclick=clearRest;
+    if(done){ setTimeout(clearRest,1500); }
+  }
+  tick();
+  if(restTimer.interval)clearInterval(restTimer.interval);
+  restTimer.interval=setInterval(function(){
+    if(!restTimer.endsAt||!document.getElementById("rest-timer")){ clearInterval(restTimer.interval); restTimer.interval=null; return; }
+    tick();
+  },250);
+}
+
+/* ---------------- body diagram ---------------- */
+function renderBodyDiagram(opts){
+  // opts: view, compact, onSelect(id), colorFor(id), showToggle
+  var view=opts.view||"front";
+  var shapes=view==="front"?FRONT_MUSCLES:BACK_MUSCLES;
+  var wrap=el('<div class="body-diagram"></div>');
+  if(opts.showToggle){
+    var tog=el('<div class="view-toggle glass"></div>');
+    ["front","back"].forEach(function(v){
+      var b=el('<button class="vt-btn'+(view===v?" active":"")+'">'+(v==="front"?"Front":"Back")+'</button>');
+      b.onclick=function(){ opts.onView(v); };
+      tog.appendChild(b);
+    });
+    wrap.appendChild(tog);
+  }
+  var svgNS="http://www.w3.org/2000/svg";
+  var svg=document.createElementNS(svgNS,"svg");
+  svg.setAttribute("viewBox","0 0 240 600");
+  svg.setAttribute("class","body-svg"+(opts.compact?" compact":""));
+  svg.innerHTML=
+    '<defs><radialGradient id="headGrad" cx="35%" cy="30%" r="80%"><stop offset="0%" stop-color="#3a352f"/><stop offset="100%" stop-color="#242019"/></radialGradient></defs>'+
+    '<g>'+SILHOUETTE.map(function(d){return '<path d="'+d+'" fill="var(--bg-3)"/>';}).join("")+'</g>'+
+    '<ellipse cx="'+HEAD.cx+'" cy="'+HEAD.cy+'" rx="'+HEAD.rx+'" ry="'+HEAD.ry+'" fill="url(#headGrad)"/>'+
+    '<path d="'+NECK+'" fill="var(--bg-3)"/>'+
+    HANDS.map(function(h){return '<ellipse cx="'+h.cx+'" cy="'+h.cy+'" rx="'+h.rx+'" ry="'+h.ry+'" fill="var(--bg-3)"/>';}).join("")+
+    FEET.map(function(f){return '<ellipse cx="'+f.cx+'" cy="'+f.cy+'" rx="'+f.rx+'" ry="'+f.ry+'" fill="var(--bg-3)"/>';}).join("");
+  shapes.forEach(function(shape){
+    var p=document.createElementNS(svgNS,"path");
+    var color=opts.colorFor(shape.id);
+    p.setAttribute("d",shape.d);
+    p.setAttribute("fill",color);
+    p.setAttribute("stroke","rgba(8,7,10,0.55)");
+    p.setAttribute("stroke-width","1.5");
+    p.setAttribute("class","muscle-tile");
+    p.setAttribute("aria-label",MUSCLE_LABEL[shape.id]);
+    if(opts.onSelect){
+      p.style.cursor="pointer";
+      p.addEventListener("click",function(){ opts.onSelect(shape.id); });
+      p.addEventListener("mouseenter",function(){ p.style.filter="drop-shadow(0 0 6px "+color+")"; });
+      p.addEventListener("mouseleave",function(){ p.style.filter="none"; });
+    }else{ p.style.pointerEvents="none"; }
+    svg.appendChild(p);
+  });
+  wrap.appendChild(svg);
+  return wrap;
+}
+function heatLegend(){
+  var n=el('<div class="heat-legend"></div>');
+  var bar=el('<div class="heat-legend-bar"></div>');
+  ["none","cold","balanced","hot","max"].forEach(function(lv){
+    bar.appendChild(el('<div style="background:'+HEAT_COLORS[lv]+'"></div>'));
+  });
+  n.appendChild(bar);
+  n.appendChild(el('<div class="heat-legend-labels"><span>Untrained</span><span>7-day volume</span><span>Max</span></div>'));
+  return n;
+}
+
+/* ---------------- routing ---------------- */
+function parseHash(){
+  var h=location.hash.replace(/^#/,"")||"/";
+  var parts=h.split("/").filter(Boolean);
+  return {raw:h,parts:parts};
+}
+function nav(to){ location.hash=to; }
+function goBack(){ history.back(); }
+
+function renderTabBar(active){
+  var tb=document.getElementById("tabbar");
+  tb.innerHTML="";
+  [["/","Home","home"],["/body","Body","body"],["/progress","Progress","chart"]].forEach(function(t){
+    var isActive=active===t[0];
+    var a=el('<a class="tab-item'+(isActive?" active":"")+'" href="#'+t[0]+'">'+ICONS[t[2]]+'<span>'+t[1]+'</span></a>');
+    tb.appendChild(a);
+  });
+}
+
+/* ---------------- screens ---------------- */
+function greeting(){ var h=new Date().getHours(); if(h<5)return"Still up"; if(h<12)return"Good morning"; if(h<17)return"Good afternoon"; return"Good evening"; }
+var DAY_LETTERS=["S","M","T","W","T","F","S"];
+var bodyViewState="front";
+
+function screenDashboard(){
+  var setCounts=computeSetCounts();
+  var streak=computeStreak();
+  var trained=daysTrainedThisWeek();
+  var today=new Date().getDay();
+  var top=MUSCLE_GROUPS.filter(function(m){return setCounts[m.id]>0;})
+    .sort(function(a,b){return setCounts[b.id]-setCounts[a.id];}).slice(0,3);
+
+  var root=el('<div class="screen-anim"></div>');
+  root.appendChild(el(
+    '<div style="margin-bottom:22px">'+
+    '<div class="eyebrow">'+new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})+'</div>'+
+    '<h1 style="font-size:28px;margin-top:4px">'+greeting()+', <span class="gold-text">champion</span></h1></div>'
+  ));
+
+  var strip=DAY_LETTERS.map(function(d,i){
+    var on=!!trained[i];
+    return '<div class="week-day" style="background:'+(on?"var(--gold-grad)":"rgba(255,255,255,.06)")+';color:'+(on?"#1a1206":"var(--ink-3)")+';'+(i===today?"outline:1.5px solid var(--gold-300);outline-offset:2px":"")+'">'+d+'</div>';
+  }).join("");
+  root.appendChild(el(
+    '<div style="display:flex;gap:10px;margin-bottom:16px">'+
+      '<div class="glass" style="flex:1;display:flex;align-items:center;gap:12px;padding:16px">'+
+        '<div style="width:40px;height:40px;border-radius:50%;background:rgba(217,98,47,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ICONS.flame+'</div>'+
+        '<div><div style="font-family:var(--font-display);font-size:22px;line-height:1">'+streak+'</div><div style="font-size:11px;color:var(--ink-2);margin-top:3px">Day streak</div></div>'+
+      '</div>'+
+      '<div class="glass" style="flex:1.4;padding:16px"><div style="font-size:11px;color:var(--ink-2);margin-bottom:10px">This week</div>'+
+        '<div style="display:flex;justify-content:space-between">'+strip+'</div></div>'+
+    '</div>'
+  ));
+
+  var cta=el('<button class="btn-primary tap" style="width:100%;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;font-size:16px">Start Workout'+ICONS.arrowRight+'</button>');
+  cta.onclick=function(){ nav("/body"); };
+  root.appendChild(cta);
+
+  var heatCard=el('<div class="glass" style="padding:18px;margin-bottom:20px"></div>');
+  var hdr=el('<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div class="section-label" style="margin:0">Weekly Heat Map</div></div>');
+  var full=el('<button class="tap" style="color:var(--gold-300);font-size:12px;font-weight:700">Full view →</button>');
+  full.onclick=function(){ nav("/body"); };
+  hdr.appendChild(full); heatCard.appendChild(hdr);
+  heatCard.appendChild(renderBodyDiagram({
+    view:bodyViewState,compact:true,showToggle:true,
+    colorFor:function(id){return colorForCount(setCounts[id]);},
+    onSelect:function(id){ nav("/muscle/"+id); },
+    onView:function(v){ bodyViewState=v; render(); }
+  }));
+  root.appendChild(heatCard);
+
+  if(top.length){
+    root.appendChild(el('<div class="section-label">Most Trained</div>'));
+    var rows=el('<div class="rows"></div>');
+    top.forEach(function(m){
+      var r=el('<button class="muscle-row tap"><span class="dot" style="background:'+colorForCount(setCounts[m.id])+';color:'+colorForCount(setCounts[m.id])+'"></span><span class="muscle-row-label">'+MUSCLE_LABEL[m.id]+'</span><span class="muscle-row-meta">'+Math.round(setCounts[m.id])+' sets</span></button>');
+      r.onclick=function(){ nav("/muscle/"+m.id); };
+      rows.appendChild(r);
+    });
+    root.appendChild(rows);
+  }
+  return root;
+}
+
+function screenBody(){
+  var setCounts=computeSetCounts();
+  var sorted=MUSCLE_GROUPS.slice().sort(function(a,b){return setCounts[b.id]-setCounts[a.id];});
+  var root=el('<div class="screen-anim"></div>');
+  root.appendChild(el('<div class="page-header"><div class="ph-left"><div><div class="eyebrow">Muscle Map</div><h1 class="title">Your Body</h1></div></div></div>'));
+
+  var card=el('<div class="glass" style="padding:22px 18px 10px"></div>');
+  card.appendChild(renderBodyDiagram({
+    view:bodyViewState,showToggle:true,
+    colorFor:function(id){return colorForCount(setCounts[id]);},
+    onSelect:function(id){ nav("/muscle/"+id); },
+    onView:function(v){ bodyViewState=v; render(); }
+  }));
+  var lg=el('<div style="margin-top:18px"></div>'); lg.appendChild(heatLegend()); card.appendChild(lg);
+  root.appendChild(card);
+
+  var sec=el('<div style="margin-top:22px"></div>');
+  sec.appendChild(el('<div class="section-label">This Week</div>'));
+  var rows=el('<div class="rows"></div>');
+  sorted.forEach(function(m){
+    var c=setCounts[m.id],lvl=levelForCount(c);
+    var r=el('<button class="muscle-row tap"><span class="dot" style="background:'+colorForCount(c)+';color:'+colorForCount(c)+'"></span><span class="muscle-row-label">'+MUSCLE_LABEL[m.id]+'</span><span class="muscle-row-meta">'+(c>0?Math.round(c)+" sets · "+lvl:"No sets yet")+'</span></button>');
+    r.onclick=function(){ nav("/muscle/"+m.id); };
+    rows.appendChild(r);
+  });
+  sec.appendChild(rows); root.appendChild(sec);
+  return root;
+}
+
+var muscleSearch="",muscleAdding=false,muscleNewName="";
+function screenMuscle(muscleId){
+  var root=el('<div class="screen-anim"></div>');
+  var hdr=el('<div class="page-header"><div class="ph-left"></div></div>');
+  var back=el('<button class="back-btn tap">'+ICONS.chevronLeft+'</button>'); back.onclick=goBack;
+  hdr.querySelector(".ph-left").appendChild(back);
+  hdr.querySelector(".ph-left").appendChild(el('<div><div class="eyebrow">'+(MUSCLE_LABEL[muscleId]||"Muscle")+'</div><h1 class="title">Select Exercise</h1></div>'));
+  root.appendChild(hdr);
+
+  var searchWrap=el('<div style="position:relative;margin-bottom:16px"></div>');
+  searchWrap.appendChild(el('<span style="position:absolute;left:14px;top:15px;color:var(--ink-3)">'+ICONS.search+'</span>'));
+  var input=el('<input class="search-input" style="padding-left:38px" placeholder="Search '+(MUSCLE_LABEL[muscleId]||"").toLowerCase()+' exercises" />');
+  input.value=muscleSearch;
+  input.oninput=function(){ muscleSearch=input.value; refreshList(); };
+  searchWrap.appendChild(input); root.appendChild(searchWrap);
+
+  var listWrap=el('<div class="rows" id="ex-list"></div>');
+  root.appendChild(listWrap);
+
+  function lastLogged(id){ var r=state.sets.filter(function(s){return s.exerciseId===id;}); if(!r.length)return null; return Math.max.apply(null,r.map(function(s){return s.timestamp;})); }
+  function refreshList(){
+    listWrap.innerHTML="";
+    var list=exercisesForMuscle(muscleId).filter(function(e){return e.name.toLowerCase().indexOf(muscleSearch.trim().toLowerCase())>=0;});
+    list.forEach(function(ex){
+      var last=lastLogged(ex.id);
+      var sub=(ex.custom?"Custom · ":"")+(last?"Last logged "+new Date(last).toLocaleDateString(undefined,{month:"short",day:"numeric"}):"Not logged yet");
+      var r=el('<button class="list-row tap"><div class="glyph">'+esc(ex.glyph)+'</div><div class="list-row-body"><div class="list-row-title">'+esc(ex.name)+'</div><div class="list-row-sub">'+sub+'</div></div></button>');
+      r.onclick=function(){ nav("/exercise/"+ex.id); };
+      listWrap.appendChild(r);
+    });
+    if(!list.length){ listWrap.appendChild(el('<div class="empty">No exercises match "'+esc(muscleSearch)+'".</div>')); }
+  }
+  refreshList();
+
+  var addArea=el('<div id="add-area"></div>');
+  root.appendChild(addArea);
+  function renderAdd(){
+    addArea.innerHTML="";
+    if(!muscleAdding){
+      var b=el('<button class="btn-ghost tap" style="width:100%;margin-top:14px;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14">'+ICONS.plus+' Add custom exercise</button>');
+      b.onclick=function(){ muscleAdding=true; renderAdd(); };
+      addArea.appendChild(b);
+    }else{
+      var box=el('<div class="glass" style="margin-top:14px;padding:16px;display:flex;flex-direction:column;gap:10px"></div>');
+      var ni=el('<input class="search-input" placeholder="Exercise name" />');
+      ni.value=muscleNewName;
+      ni.oninput=function(){ muscleNewName=ni.value; };
+      ni.onkeydown=function(e){ if(e.key==="Enter")submit(); };
+      box.appendChild(ni);
+      var btns=el('<div style="display:flex;gap:8px"></div>');
+      var cancel=el('<button class="btn-ghost tap" style="flex:1;padding:11px 0;font-weight:600;font-size:13.5px">Cancel</button>');
+      cancel.onclick=function(){ muscleAdding=false; muscleNewName=""; renderAdd(); };
+      var addLog=el('<button class="btn-primary tap" style="flex:1;padding:11px 0;font-size:13.5px">Add & Log</button>');
+      addLog.onclick=submit;
+      btns.appendChild(cancel); btns.appendChild(addLog); box.appendChild(btns);
+      addArea.appendChild(box);
+      setTimeout(function(){ ni.focus(); },30);
+      function submit(){
+        var name=muscleNewName.trim(); if(!name)return;
+        var ex=addCustomExercise(name,muscleId);
+        muscleNewName=""; muscleAdding=false;
+        nav("/exercise/"+ex.id);
+      }
+    }
+  }
+  renderAdd();
+  return root;
+}
+
+var logDraft={};
+function screenExercise(exId){
+  var ex=exerciseById(exId);
+  var root=el('<div class="screen-anim"></div>');
+  if(!ex){
+    var hdr0=el('<div class="page-header"><div class="ph-left"></div></div>');
+    var b0=el('<button class="back-btn tap">'+ICONS.chevronLeft+'</button>'); b0.onclick=goBack;
+    hdr0.querySelector(".ph-left").appendChild(b0);
+    hdr0.querySelector(".ph-left").appendChild(el('<h1 class="title">Exercise not found</h1>'));
+    root.appendChild(hdr0); return root;
+  }
+  var history=setsForExercise(exId);
+  var d=logDraft[exId];
+  if(!d){ var last=history[history.length-1]; d={weight:last?last.weight:45,reps:last?last.reps:8,rpe:null,metric:"weight"}; logDraft[exId]=d; }
+
+  var hdr=el('<div class="page-header"><div class="ph-left"></div></div>');
+  var back=el('<button class="back-btn tap">'+ICONS.chevronLeft+'</button>'); back.onclick=goBack;
+  hdr.querySelector(".ph-left").appendChild(back);
+  hdr.querySelector(".ph-left").appendChild(el('<div><div class="eyebrow">'+MUSCLE_LABEL[ex.muscle]+'</div><h1 class="title" style="font-size:23px">'+esc(ex.name)+'</h1></div>'));
+  root.appendChild(hdr);
+
+  mountRestTimer(root);
+
+  /* log form */
+  var form=el('<div class="glass" style="padding:18px;margin-bottom:16px"></div>');
+  form.appendChild(el('<div class="section-label" style="margin-bottom:14px">Log a Set</div>'));
+  var fields=el('<div style="display:flex;gap:10px;margin-bottom:14px"></div>');
+
+  var wCol=el('<div style="flex:1"><div class="field-label">Weight (lb)</div></div>');
+  var wInput=el('<input type="number" class="search-input" />'); wInput.value=d.weight;
+  wInput.oninput=function(){ d.weight=Number(wInput.value); };
+  wCol.appendChild(wInput);
+  var wInc=el('<div style="display:flex;gap:6px;margin-top:8px"></div>');
+  [-5,-2.5,2.5,5].forEach(function(step){
+    var b=el('<button class="btn-ghost tap inc-btn">'+(step>0?"+"+step:step)+'</button>');
+    b.onclick=function(){ d.weight=Math.max(0,Math.round((d.weight+step)*10)/10); wInput.value=d.weight; };
+    wInc.appendChild(b);
+  });
+  wCol.appendChild(wInc); fields.appendChild(wCol);
+
+  var rCol=el('<div style="width:92px"><div class="field-label">Reps</div></div>');
+  var rInput=el('<input type="number" class="search-input" />'); rInput.value=d.reps;
+  rInput.oninput=function(){ d.reps=Number(rInput.value); };
+  rCol.appendChild(rInput);
+  var rInc=el('<div style="display:flex;gap:6px;margin-top:8px"></div>');
+  var rMinus=el('<button class="btn-ghost tap inc-btn">−1</button>');
+  rMinus.onclick=function(){ d.reps=Math.max(0,d.reps-1); rInput.value=d.reps; };
+  var rPlus=el('<button class="btn-ghost tap inc-btn">+1</button>');
+  rPlus.onclick=function(){ d.reps=d.reps+1; rInput.value=d.reps; };
+  rInc.appendChild(rMinus); rInc.appendChild(rPlus); rCol.appendChild(rInc); fields.appendChild(rCol);
+  form.appendChild(fields);
+
+  var rpeWrap=el('<div style="margin-bottom:16px"><div class="field-label">RPE (optional)</div></div>');
+  var rpeRow=el('<div style="display:flex;gap:6px"></div>');
+  [6,7,8,9,10].forEach(function(v){
+    var b=el('<button class="btn-ghost tap rpe-btn'+(d.rpe===v?" active":"")+'">'+v+'</button>');
+    b.onclick=function(){ d.rpe=(d.rpe===v?null:v); Array.prototype.forEach.call(rpeRow.children,function(c,i){ c.className="btn-ghost tap rpe-btn"+(d.rpe===[6,7,8,9,10][i]?" active":""); }); };
+    rpeRow.appendChild(b);
+  });
+  rpeWrap.appendChild(rpeRow); form.appendChild(rpeWrap);
+
+  var logBtn=el('<button class="btn-primary tap" style="width:100%;padding:14px 0;font-size:15px">Log Set</button>');
+  logBtn.onclick=function(){
+    if(d.weight<=0||d.reps<=0)return;
+    logSet({exerciseId:ex.id,weight:d.weight,reps:d.reps,rpe:d.rpe});
+    startRest(90);
+    logBtn.textContent="Logged ✓";
+    setTimeout(function(){ render(); },250);
+  };
+  form.appendChild(logBtn);
+  root.appendChild(form);
+
+  /* today */
+  var startOfDay=new Date(); startOfDay.setHours(0,0,0,0);
+  var todaySets=history.filter(function(s){return s.timestamp>=startOfDay.getTime();}).slice().reverse();
+  var prs=detectPRs(history);
+  if(todaySets.length){
+    var todayWrap=el('<div style="margin-bottom:20px"></div>');
+    todayWrap.appendChild(el('<div class="section-label">Today</div>'));
+    var trows=el('<div class="rows"></div>');
+    todaySets.forEach(function(s){
+      var pr=prs[s.id];
+      var badges=(s.rpe?'<span class="pill pill-em">RPE '+s.rpe+'</span>':'')+(pr&&pr.length?'<span class="pill">'+ICONS.trophy+' PR</span>':'');
+      var time=new Date(s.timestamp).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+      trows.appendChild(el('<div class="list-row" style="cursor:default"><div class="list-row-body" style="display:flex;align-items:center;gap:10px"><span class="list-row-title" style="white-space:nowrap">'+s.weight+' lb × '+s.reps+'</span>'+badges+'</div><div class="list-row-sub" style="flex-shrink:0">'+time+'</div></div>'));
+    });
+    todayWrap.appendChild(trows); root.appendChild(todayWrap);
+  }
+
+  /* stats */
+  var bestWeight=history.reduce(function(m,s){return Math.max(m,s.weight);},0);
+  var best1=history.reduce(function(m,s){return Math.max(m,epley1RM(s.weight,s.reps));},0);
+  var totalVol=history.reduce(function(sum,s){return sum+s.weight*s.reps;},0);
+  root.appendChild(el(
+    '<div class="stat-grid" style="margin-bottom:20px">'+
+    '<div class="stat-cell"><div class="stat-value">'+(bestWeight||"—")+'</div><div class="stat-label">Best Weight</div></div>'+
+    '<div class="stat-cell"><div class="stat-value">'+(best1?Math.round(best1):"—")+'</div><div class="stat-label">Est. 1RM</div></div>'+
+    '<div class="stat-cell"><div class="stat-value">'+formatVolume(totalVol)+'</div><div class="stat-label">Total Volume</div></div></div>'
+  ));
+
+  /* progress chart */
+  var chartCard=el('<div class="glass" style="padding:18px"></div>');
+  var chartHdr=el('<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="section-label" style="margin:0">Progress</div></div>');
+  var metricRow=el('<div style="display:flex;gap:4px"></div>');
+  [["weight","Weight"],["volume","Volume"],["1rm","1RM"]].forEach(function(mm){
+    var b=el('<button class="metric-btn'+(d.metric===mm[0]?" active":"")+'">'+mm[1]+'</button>');
+    b.onclick=function(){ d.metric=mm[0]; drawChart(); Array.prototype.forEach.call(metricRow.children,function(c,i){ c.className="metric-btn"+(d.metric===[["weight"],["volume"],["1rm"]][i][0]?" active":""); }); };
+    metricRow.appendChild(b);
+  });
+  chartHdr.appendChild(metricRow); chartCard.appendChild(chartHdr);
+  var chartHost=el('<div id="chart-host"></div>'); chartCard.appendChild(chartHost);
+  root.appendChild(chartCard);
+
+  function drawChart(){
+    chartHost.innerHTML="";
+    if(history.length<2){ chartHost.appendChild(el('<div class="empty">Log at least two sets to see your trend.</div>')); return; }
+    var data=history.map(function(s){
+      return {
+        date:new Date(s.timestamp).toLocaleDateString(undefined,{month:"short",day:"numeric"}),
+        weight:s.weight, volume:s.weight*s.reps, oneRm:Math.round(epley1RM(s.weight,s.reps)*10)/10
+      };
+    });
+    var key=d.metric==="1rm"?"oneRm":d.metric;
+    var vals=data.map(function(p){return p[key];});
+    var maxV=Math.max.apply(null,vals),minV=Math.min.apply(null,vals);
+    if(maxV===minV){ maxV=maxV+ (maxV*0.15||10); minV=Math.max(0,minV-(minV*0.15||10)); }
+    var W=340,H=180,padL=34,padR=10,padT=12,padB=24;
+    var innerW=W-padL-padR,innerH=H-padT-padB;
+    function x(i){ return padL + (data.length===1?innerW/2:innerW*i/(data.length-1)); }
+    function y(v){ return padT + innerH*(1-(v-minV)/(maxV-minV||1)); }
+    var pts=data.map(function(p,i){return x(i)+","+y(p[key]);});
+    var gridLines="",labels="";
+    for(var g=0;g<=4;g++){
+      var gy=padT+innerH*g/4;
+      var gv=maxV-(maxV-minV)*g/4;
+      gridLines+='<line x1="'+padL+'" y1="'+gy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+gy.toFixed(1)+'" stroke="rgba(255,255,255,0.06)"/>';
+      labels+='<text x="'+(padL-6)+'" y="'+(gy+3).toFixed(1)+'" text-anchor="end" fill="var(--ink-3)" font-size="10">'+Math.round(gv)+'</text>';
+    }
+    var xlabels="";
+    var showIdx=[0,Math.floor((data.length-1)/2),data.length-1];
+    showIdx.forEach(function(i){ xlabels+='<text x="'+x(i)+'" y="'+(H-6)+'" text-anchor="middle" fill="var(--ink-3)" font-size="10">'+data[i].date+'</text>'; });
+    var dots=data.map(function(p,i){return '<circle cx="'+x(i)+'" cy="'+y(p[key])+'" r="3" fill="#e3c470"/>';}).join("");
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:180px">'+gridLines+labels+
+      '<polyline points="'+pts.join(" ")+'" fill="none" stroke="#cda144" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+
+      dots+xlabels+'</svg>';
+    chartHost.innerHTML=svg;
+  }
+  drawChart();
+  return root;
+}
+
+var progRange=7;
+function screenProgress(){
+  var root=el('<div class="screen-anim"></div>');
+  root.appendChild(el('<div class="page-header"><div class="ph-left"><div><div class="eyebrow">Analytics</div><h1 class="title">Progress</h1></div></div></div>'));
+
+  var volumes=computeVolumes(progRange);
+  var setCounts=computeSetCounts(progRange);
+  var chartData=MUSCLE_GROUPS.map(function(m){return {id:m.id,name:MUSCLE_LABEL[m.id],volume:Math.round(volumes[m.id])};})
+    .sort(function(a,b){return b.volume-a.volume;});
+  var maxVol=Math.max.apply(null,[1].concat(chartData.map(function(d){return d.volume;})));
+
+  var card=el('<div class="glass" style="padding:18px;margin-bottom:20px"></div>');
+  var hdr=el('<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="section-label" style="margin:0">Volume by Muscle</div></div>');
+  var toggle=el('<div style="display:flex;gap:4px"></div>');
+  [[7,"Week"],[30,"Month"]].forEach(function(t){
+    var b=el('<button class="metric-btn'+(progRange===t[0]?" active":"")+'">'+t[1]+'</button>');
+    b.onclick=function(){ progRange=t[0]; render(); };
+    toggle.appendChild(b);
+  });
+  hdr.appendChild(toggle); card.appendChild(hdr);
+
+  if(chartData.some(function(d){return d.volume>0;})){
+    var bars=el('<div style="display:flex;flex-direction:column;gap:12px"></div>');
+    chartData.filter(function(d){return d.volume>0;}).forEach(function(dd){
+      var row=el('<div></div>');
+      row.appendChild(el('<div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12.5px"><span style="color:var(--ink-1);font-weight:600">'+dd.name+'</span><span style="color:var(--ink-2)">'+formatVolume(dd.volume)+'</span></div>'));
+      var track=el('<div class="vol-track"></div>');
+      track.appendChild(el('<div class="vol-fill" style="width:'+Math.max(4,dd.volume/maxVol*100)+'%;background:'+colorForCount(setCounts[dd.id])+'"></div>'));
+      row.appendChild(track); bars.appendChild(row);
+    });
+    card.appendChild(bars);
+  }else{
+    card.appendChild(el('<div class="empty">No sets logged in this range yet.</div>'));
+  }
+  root.appendChild(card);
+
+  root.appendChild(el('<div class="section-label">Exercise History</div>'));
+  var byEx={};
+  state.sets.forEach(function(s){
+    var ex=exerciseById(s.exerciseId); if(!ex)return;
+    var e=byEx[ex.id]||{name:ex.name,muscle:ex.muscle,count:0,best1:0,last:0};
+    e.count++; e.best1=Math.max(e.best1,epley1RM(s.weight,s.reps)); e.last=Math.max(e.last,s.timestamp);
+    byEx[ex.id]=e;
+  });
+  var summaries=Object.keys(byEx).map(function(id){var o=byEx[id];o.id=id;return o;}).sort(function(a,b){return b.last-a.last;});
+  if(summaries.length){
+    var rows=el('<div class="rows"></div>');
+    summaries.forEach(function(e){
+      var r=el('<button class="list-row tap"><div class="glyph">'+Math.round(e.best1)+'</div><div class="list-row-body"><div class="list-row-title">'+esc(e.name)+'</div><div class="list-row-sub">'+MUSCLE_LABEL[e.muscle]+' · '+e.count+' sets logged</div></div></button>');
+      r.onclick=function(){ nav("/exercise/"+e.id); };
+      rows.appendChild(r);
+    });
+    root.appendChild(rows);
+  }else{
+    root.appendChild(el('<div class="empty">Log your first set to start tracking progress.</div>'));
+  }
+  return root;
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  var r=parseHash();
+  var scrollTop=content.scrollTop;
+  content.innerHTML="";
+  var active="/";
+  if(r.parts[0]==="body"){ active="/body"; content.appendChild(screenBody()); }
+  else if(r.parts[0]==="progress"){ active="/progress"; content.appendChild(screenProgress()); }
+  else if(r.parts[0]==="muscle"){ active=""; content.appendChild(screenMuscle(r.parts[1])); }
+  else if(r.parts[0]==="exercise"){ active=""; content.appendChild(screenExercise(r.parts[1])); }
+  else{ active="/"; content.appendChild(screenDashboard()); }
+  renderTabBar(active);
+  content.scrollTop=0;
+}
+window.addEventListener("hashchange",function(){ muscleSearch=""; muscleAdding=false; muscleNewName=""; render(); });
+render();
+</script>
+</body>
+</html>
